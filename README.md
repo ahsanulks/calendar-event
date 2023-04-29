@@ -1,16 +1,5 @@
 # Calendar Event
 
-## Feature
-- bisa invite meeting
-- blocking schedule (tanpa meeting)
-- meeting online
-- notif
-    - reminder
-        - email subscription (e.g. for activity notification)
-        - 
-    - push notif
-- user langsung seed
-
 ## Domain
 Domain: sebuah batasan masalah
 A bounded context (BC) is the space in which a term has a definite and unambiguous meaning.
@@ -20,11 +9,19 @@ Entity: objek didalam domain yg punya lifecycle
 - Scheduling (meeting-schedule) -> blocking calendar for event
 - Reminder
 
-### Scheduling
-// TODO
+### Schedule
+- blocking schedule (tanpa meeting)
+- bisa invite meeting (lebih ke blocking calendar)
+- meeting online
 
 ### Reminder
-// TODO
+- email subscription (e.g. for activity notification)
+    - event
+        - reschedule
+        - delete & cancelation event
+        - invitation -> to receiver
+        - confirmation -> to sender
+- reminder before x minutes times
 
 ## Architecture
 
@@ -45,7 +42,10 @@ Entity: objek didalam domain yg punya lifecycle
 - client    -> sementara, CLI
 
 - Architectural pattern -> hexagonal pattern
-- Software development process -> TDD       
+- Software development process -> TDD
+
+## Data
+- user langsung seed
 
 DB consideration -> Cap Theorem
 https://youtu.be/vIA8VJdnpcs
@@ -53,3 +53,11 @@ https://stackoverflow.com/questions/12346326/cap-theorem-availability-and-partit
 https://medium.com/@hnasr/postgres-vs-mysql-5fa3c588a94e
 https://hasura.io/learn/graphql/backend-stack/languages/go/
 https://www.educative.io/courses/grokking-modern-system-design-interview-for-engineers-managers
+
+## Layout
+https://github.com/golang-standards/project-layout
+
+## repository
+https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design
+
+https://orkhan.gitbook.io/typeorm/docs/active-record-data-mapper
