@@ -61,3 +61,7 @@ https://github.com/golang-standards/project-layout
 https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design
 
 https://orkhan.gitbook.io/typeorm/docs/active-record-data-mapper
+
+
+# doc peer
+https://docs.google.com/document/d/1py_jUw93c5448axUF9EBrXUOWYMuSNVdAjK5K3bC5DM/edit#
