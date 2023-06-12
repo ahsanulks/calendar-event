@@ -65,3 +65,22 @@ https://orkhan.gitbook.io/typeorm/docs/active-record-data-mapper
 
 # doc peer
 https://docs.google.com/document/d/1py_jUw93c5448axUF9EBrXUOWYMuSNVdAjK5K3bC5DM/edit#
+
+// facade pattern https://refactoring.guru/design-patterns/facade
+// facade -> clean architecture https://medium.com/@mammimia/clean-architecture-part-iv-architecture-5eee3cb5656a
+// func (su *SchedulerUsecase) GetSchedule() {
+// 	a := su.ABC
+// 	b := su.MicroServX
+// 	return a + b
+// }
+
+
+// fake
+// dummy
+// stub
+// spy -> kita akan melakukan pengecekan kalo sebuah function di panggil
+//			e.g write.create di call 1x
+// mock -> kita akan melakukan mocking function tersebut
+// 			e.g kita melakukan ekspektasi kalo function tersebut di call dengan parameter dan ngemock response
+
+// https://jesusvalerareales.com/testing-with-test-doubles/
