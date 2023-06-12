@@ -12,3 +12,10 @@ type Schedule struct {
 func (s *Schedule) isStarted() bool {
 	return false
 }
+
+func NewSchedule(params map[string]interface{}) (*Schedule, error) {
+	// validate params
+	return &Schedule{}, nil
+	// create validation
+	// create datanya
+}

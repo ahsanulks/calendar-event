@@ -12,3 +12,11 @@ type Event struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
+
+func NewEvent(params map[string]interface{}) (*Event, error) {
+	// validate params
+
+	return &Event{}, nil
+	// create validation
+	// create datanya
+}
