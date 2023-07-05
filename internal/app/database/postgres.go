@@ -9,7 +9,7 @@ import (
 )
 
 type Database struct {
-	conn *gorm.DB
+	Conn *gorm.DB
 }
 
 func NewDBConnection() *Database {
