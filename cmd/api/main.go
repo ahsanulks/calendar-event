@@ -8,20 +8,29 @@ import (
 
 	"event-calendar/internal/app/database"
 	scheduleRepo "event-calendar/internal/app/domain/schedule/repository"
+
+	handler "event-calendar/internal/app/handler/http"
 	"event-calendar/internal/app/route"
+	"event-calendar/internal/app/use_case/scheduler"
 )
 
 func main() {
 	gotenv.Load()
 
 	db := database.NewDBConnection()
-	scheduleRepo.NewScheduleRepository(db)
+	repo := scheduleRepo.NewScheduleRepository(db)
+
+	schedulerUseCase := scheduler.NewSchedulerUsecase(repo)
+	scheduleHandler := handler.NewSchedulerHandler(schedulerUseCase)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(gin.Logger())
 
+	r.POST("/schedules", scheduleHandler.CreateSchedule)
+
 	route.NewRoute(r)
 
 	r.Run(":" + os.Getenv("APP_PORT"))
+
 }

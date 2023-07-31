@@ -21,5 +21,6 @@ func (r *ScheduleRepository) Create(ctx context.Context, schedule *entity.Schedu
 	if schedule == nil {
 		return 0, errors.New("error")
 	}
-	return 0, nil
+	err := r.db.Conn.WithContext(ctx).Create(schedule).Error
+	return schedule.Id, err
 }
