@@ -9,18 +9,18 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 func TestScheduleRepository_Create(t *testing.T) {
-	db, mock, _ := sqlmock.New()
+	db, mock, _ := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	defer db.Close()
-	dialector := postgres.New(postgres.Config{
-		DSN:                  "sqlmock_db_0",
-		DriverName:           "postgres",
-		Conn:                 db,
-		PreferSimpleProtocol: true,
+	dialector := mysql.New(mysql.Config{
+		DSN:                       "sqlmock_db_0",
+		DriverName:                "mysql",
+		Conn:                      db,
+		SkipInitializeWithVersion: true,
 	})
 	dbGorm, _ := gorm.Open(dialector, &gorm.Config{})
 	dbMock := database.Database{
@@ -30,7 +30,7 @@ func TestScheduleRepository_Create(t *testing.T) {
 		schedule *entity.Schedule
 	}
 
-	scheduleVar := &entity.Schedule{
+	scheduleMock := &entity.Schedule{
 		Name:      "Test name schedule",
 		StartTime: time.Now(),
 		EndTime:   time.Now().Add(1 * time.Hour),
@@ -41,6 +41,7 @@ func TestScheduleRepository_Create(t *testing.T) {
 		sr            *repository.ScheduleRepository
 		args          args
 		wantErr       bool
+		wantId        int
 		expectedQuery func(mock sqlmock.Sqlmock)
 	}{
 		{
@@ -50,44 +51,39 @@ func TestScheduleRepository_Create(t *testing.T) {
 			},
 			sr:      repository.NewScheduleRepository(&dbMock),
 			wantErr: true,
+			wantId:  0,
 			expectedQuery: func(m sqlmock.Sqlmock) {
 			},
 		},
-		// TODO: Fix this
-		// {
-		// 	name: "success create",
-		// 	args: args{
-		// 		scheduleVar,
-		// 	},
-		// 	sr:      repository.NewScheduleRepository(&dbMock),
-		// 	wantErr: false,
-		// 	expectedQuery: func(m sqlmock.Sqlmock) {
-		// 		m.ExpectBegin()
-		// 		m.ExpectExec("INSERT INTO schedules (name, start_time, end_time) values (?, ?, ?) RETURNING \"id\"").WithArgs(
-		// 			scheduleVar.Name,
-		// 			scheduleVar.StartTime,
-		// 			scheduleVar.EndTime,
-		// 		).WillReturnResult(sqlmock.NewResult(1, 1))
-		// 		m.ExpectCommit()
-		// 	},
-		// },
+		{
+			name:    "success create",
+			args:    args{scheduleMock},
+			sr:      repository.NewScheduleRepository(&dbMock),
+			wantErr: false,
+			wantId:  1,
+			expectedQuery: func(mock sqlmock.Sqlmock) {
+				mock.ExpectBegin()
+				mock.ExpectExec("INSERT INTO `schedules` (`name`,`start_time`,`end_time`) VALUES (?,?,?)").WithArgs(scheduleMock.Name, scheduleMock.StartTime, scheduleMock.EndTime).WillReturnResult(sqlmock.NewResult(1, 1))
+				mock.ExpectCommit()
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mock.MatchExpectationsInOrder(true)
 			tt.expectedQuery(mock)
-			_, err := tt.sr.Create(context.Background(), tt.args.schedule)
+			id, err := tt.sr.Create(context.Background(), tt.args.schedule)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SchedulerUsecase.CreateSchedule() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if err := mock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
-			// if !tt.wantErr {
-			// 	if tt.args.schedule.Id == 0 {
-			// 		t.Error("SchedulerUsecase.CreateSchedule() error id is = 0, want not 0")
-			// 	}
-			// }
+
+			if tt.wantId != id {
+				t.Error("SchedulerUsecase.CreateSchedule() error id is = 0, want not 0")
+			}
 		})
 	}
 }
