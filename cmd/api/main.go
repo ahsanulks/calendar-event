@@ -11,6 +11,7 @@ import (
 
 	handler "event-calendar/internal/app/handler/http"
 	"event-calendar/internal/app/route"
+	"event-calendar/internal/app/use_case/email"
 	"event-calendar/internal/app/use_case/scheduler"
 )
 
@@ -19,8 +20,9 @@ func main() {
 
 	db := database.NewDBConnection()
 	repo := scheduleRepo.NewScheduleRepository(db)
+	emailGenerator := email.EmailGenerator{}
 
-	schedulerUseCase := scheduler.NewSchedulerUsecase(repo)
+	schedulerUseCase := scheduler.NewSchedulerUsecase(repo, emailGenerator)
 	scheduleHandler := handler.NewSchedulerHandler(schedulerUseCase)
 
 	r := gin.New()

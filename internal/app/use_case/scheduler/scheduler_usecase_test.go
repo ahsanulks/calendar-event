@@ -19,6 +19,18 @@ func (writer *fakeWriter) Create(ctx context.Context, schedule *entity.Schedule)
 	return 0, errors.New("error")
 }
 
+type fakeEmailSender struct {
+	called bool
+}
+
+func (fakeEmailSender *fakeEmailSender) SendBatchTo(ctx context.Context, guestsEmail []string, schedule *entity.Schedule) error {
+	fakeEmailSender.called = true
+	if guestsEmail[0] == "test@mail.com" {
+		return nil
+	}
+	return errors.New("error")
+}
+
 func TestSchedulerUsecase_CreateSchedule(t *testing.T) {
 	type args struct {
 		schedule *dto.ScheduleRequestDto
@@ -29,6 +41,7 @@ func TestSchedulerUsecase_CreateSchedule(t *testing.T) {
 		args            args
 		wantErr         bool
 		wantSchedulerId int
+		wantSendEmail   bool
 	}{
 		{
 			name: "error when endTime < startTime",
@@ -39,7 +52,6 @@ func TestSchedulerUsecase_CreateSchedule(t *testing.T) {
 					EndTime:   time.Now().Add(-2 * time.Hour),
 				},
 			},
-			su:      scheduler.NewSchedulerUsecase(new(fakeWriter)),
 			wantErr: true,
 		},
 		{
@@ -51,7 +63,6 @@ func TestSchedulerUsecase_CreateSchedule(t *testing.T) {
 					EndTime:   time.Now().Add(1 * time.Hour),
 				},
 			},
-			su:      scheduler.NewSchedulerUsecase(new(fakeWriter)),
 			wantErr: true,
 		},
 		{
@@ -63,7 +74,6 @@ func TestSchedulerUsecase_CreateSchedule(t *testing.T) {
 					EndTime:   time.Now().Add(1 * time.Hour),
 				},
 			},
-			su:      scheduler.NewSchedulerUsecase(new(fakeWriter)),
 			wantErr: true,
 		},
 		{
@@ -75,11 +85,24 @@ func TestSchedulerUsecase_CreateSchedule(t *testing.T) {
 					EndTime:   time.Now().Add(1 * time.Hour),
 				},
 			},
-			su:      scheduler.NewSchedulerUsecase(new(fakeWriter)),
 			wantErr: true,
 		},
 		{
-			name: "success",
+			name: "error when sending invitation",
+			args: args{
+				&dto.ScheduleRequestDto{
+					Name:        "testing",
+					StartTime:   time.Now().Add(1 * time.Hour),
+					EndTime:     time.Now().Add(2 * time.Hour),
+					GuestsEmail: []string{"assd@mail.com"},
+				},
+			},
+			wantErr:         true,
+			wantSendEmail:   true,
+			wantSchedulerId: 0,
+		},
+		{
+			name: "success without sending invitation",
 			args: args{
 				&dto.ScheduleRequestDto{
 					Name:      "testing",
@@ -87,19 +110,38 @@ func TestSchedulerUsecase_CreateSchedule(t *testing.T) {
 					EndTime:   time.Now().Add(2 * time.Hour),
 				},
 			},
-			su:              scheduler.NewSchedulerUsecase(new(fakeWriter)),
 			wantErr:         false,
 			wantSchedulerId: 1,
+		},
+		{
+			name: "success with sending invitation",
+			args: args{
+				&dto.ScheduleRequestDto{
+					Name:        "testing",
+					StartTime:   time.Now().Add(1 * time.Hour),
+					EndTime:     time.Now().Add(2 * time.Hour),
+					GuestsEmail: []string{"test@mail.com"},
+				},
+			},
+			wantErr:         false,
+			wantSchedulerId: 1,
+			wantSendEmail:   true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			schedulerId, err := tt.su.CreateSchedule(context.Background(), tt.args.schedule)
+			emailSender := new(fakeEmailSender)
+			su := scheduler.NewSchedulerUsecase(new(fakeWriter), emailSender)
+			schedulerId, err := su.CreateSchedule(context.Background(), tt.args.schedule)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SchedulerUsecase.CreateSchedule() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if schedulerId != tt.wantSchedulerId {
 				t.Errorf("SchedulerUsecase.CreateSchedule() schedulerId = %d, schedulerId %d", schedulerId, tt.wantSchedulerId)
+			}
+
+			if emailSender.called != tt.wantSendEmail {
+				t.Error("SchedulerUsecase.CreateSchedule() email not called")
 			}
 		})
 	}
