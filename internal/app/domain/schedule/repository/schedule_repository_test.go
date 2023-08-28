@@ -15,6 +15,7 @@ import (
 
 func TestScheduleRepository_Create(t *testing.T) {
 	db, mock, _ := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	mock.MatchExpectationsInOrder(true)
 	defer db.Close()
 	dialector := mysql.New(mysql.Config{
 		DSN:                       "sqlmock_db_0",
@@ -71,7 +72,6 @@ func TestScheduleRepository_Create(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock.MatchExpectationsInOrder(true)
 			tt.expectedQuery(mock)
 			id, err := tt.sr.Create(context.Background(), tt.args.schedule)
 			if (err != nil) != tt.wantErr {

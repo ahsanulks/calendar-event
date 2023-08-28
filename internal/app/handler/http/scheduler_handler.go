@@ -23,7 +23,6 @@ func NewSchedulerHandler(scheduleCreator ScheduleCreator) *SchedulerHandler {
 }
 
 func (h *SchedulerHandler) CreateSchedule(c *gin.Context) {
-
 	var requestBody dto.ScheduleRequestDto
 	if err := c.BindJSON(&requestBody); err != nil {
 		c.JSON(http.StatusBadRequest, map[string]interface{}{
